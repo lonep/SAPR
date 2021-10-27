@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
+     <widget class="QCheckBox" name="baseLeft">
+      <property name="text">
+       <string>Заделка слева</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QTableWidget" name="tableWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="rowCount">
+       <number>0</number>
+      </property>
+      <attribute name="horizontalHeaderVisible">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderCascadingSectionResizes">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="horizontalHeaderMinimumSectionSize">
+       <number>37</number>
+      </attribute>
+      <attribute name="horizontalHeaderDefaultSectionSize">
+       <number>45</number>
+      </attribute>
+      <attribute name="horizontalHeaderHighlightSections">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderStretchLastSection">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string notr="true">L</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>A</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>E</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>sigma</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>q</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>F</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QCheckBox" name="baseRight">
+      <property name="text">
+       <string>Заделка справа</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Главное</string>
+    </property>
+    <addaction name="open"/>
+    <addaction name="write"/>
+    <addaction name="action_3"/>
+    <addaction name="action_2"/>
+    <addaction name="action_4"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Стержни</string>
+    </property>
+    <addaction name="add"/>
+    <addaction name="remove"/>
+    <addaction name="removeAll"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Рассчет</string>
+    </property>
+    <addaction name="calc"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Заделка</string>
+    </property>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="open">
+   <property name="text">
+    <string>Открыть прокт</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>Закрыть проект</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>Справка</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
+  <action name="add">
+   <property name="text">
+    <string>Добавить стержень</string>
+   </property>
+  </action>
+  <action name="remove">
+   <property name="text">
+    <string>Удалить стержень</string>
+   </property>
+  </action>
+  <action name="removeAll">
+   <property name="text">
+    <string>Удалить все стержни</string>
+   </property>
+  </action>
+  <action name="calc">
+   <property name="text">
+    <string>Рассчитать</string>
+   </property>
+  </action>
+  <action name="write">
+   <property name="text">
+    <string>Сохранить проект</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
