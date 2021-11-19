@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 
 #include <QString>
+#include <QVector>
+
 #include <QInputDialog>
 #include <QtQuickWidgets/QQuickWidget>
 #include <QPainter>
@@ -10,11 +12,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMessageBox>
 
 namespace  {
-    const int scaleElement = 30 ;
-    const int startX       = 300;
-    const int startY       = 300;
+    const  int scaleElement = 30 ;
+    static int startX       = 300;
+    const  int startY       = 300;
+
+    const  int graphOffset  =  50 ;
+    const  int graphYLenght = 200 ;
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,14 +35,18 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->open,        &QAction::triggered, this, [this](){open()                     ;});
     QObject::connect(ui->write,       &QAction::triggered, this, [this](){write()                    ;});
 
-    QObject::connect(ui->add,       &QAction::triggered, this, [this](){add()                        ;});
-    QObject::connect(ui->remove,    &QAction::triggered, this, [this](){remove()                     ;});
-    QObject::connect(ui->removeAll, &QAction::triggered, this, [this](){ui->tableWidget->clear()     ;});
-    QObject::connect(ui->calc,      &QAction::triggered, this, [this](){setDrawState(!getDrawState());});
+    QObject::connect(ui->add,          &QAction::triggered, this, [this](){add()                        ;});
+    QObject::connect(ui->remove,       &QAction::triggered, this, [this](){remove()                     ;});
+    QObject::connect(ui->removeAll,    &QAction::triggered, this, [this](){ui->tableWidget->clear()     ;});
 
-    QObject::connect(ui->baseLeft,  &QCheckBox::stateChanged, this, [this](){setLeftBase(!getLeftBase());});
-    QObject::connect(ui->baseRight,  &QCheckBox::stateChanged, this, [this](){setRightBase(!getRightBase());});
+    QObject::connect(ui->showElement,  &QCheckBox::stateChanged, this, [this](){setDrawState(!getDrawState());});
+    QObject::connect(ui->baseLeft,     &QCheckBox::stateChanged, this, [this](){setLeftBase (!getLeftBase ());});
+    QObject::connect(ui->baseRight,    &QCheckBox::stateChanged, this, [this](){setRightBase(!getRightBase());});
+    QObject::connect(ui->Nx,           &QCheckBox::stateChanged, this, [this](){setNx       (!getNx       ());});
 
+    QObject::connect(ui->Calc,         &QPushButton::clicked,    this, [this](){calc();});
+
+    QObject::connect(ui->horizontalScrollBar,         &QAbstractSlider::valueChanged,    this, [this](){offsetX = -ui->horizontalScrollBar->sliderPosition() * 10;});
 
 
 }
@@ -100,15 +110,15 @@ void MainWindow::open(){
     for (auto &it:list)
     {
             if (i==0)
-            {
                 add();
-                qDebug("add %i", i);
-            }
+
+
             QTableWidgetItem *item = new QTableWidgetItem;
             item->setText(it);
 //            qDebug(qPrintable(item->text()));
             ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, i, item);
             i++;
+
             if (i == 6)
                 i = 0;
     }
@@ -162,6 +172,11 @@ void MainWindow::setRightBase(bool state)
     wigetState.rightBase = state;
 }
 
+void MainWindow::setNx(bool state)
+{
+    wigetState.Nx = state;
+}
+
 bool MainWindow::getDrawState()
 {
     return wigetState.drawState;
@@ -175,6 +190,17 @@ bool MainWindow::getRightBase()
 bool MainWindow::getLeftBase()
 {
     return wigetState.leftBase;
+}
+
+bool MainWindow::getNx()
+{
+    return wigetState.Nx;
+}
+
+double MainWindow::getValue (int element, int type)
+{
+    double data = ui->tableWidget->item(element,type)->text().toDouble();
+    return data;
 }
 
 bool MainWindow::validation()
@@ -200,11 +226,9 @@ bool MainWindow::validation()
 void MainWindow::initRow()
 {
     for (int i = 0; i < ui->tableWidget->columnCount(); i++)
-    {
-        qDebug("i-%d, row-%d",i,ui->tableWidget->rowCount()-1);
         ui->tableWidget->item(ui->tableWidget->rowCount()-1, i)->setText("0");
 
-    }
+
 }
 
 void MainWindow::add()
@@ -240,7 +264,7 @@ inline void MainWindow::paintQ(QPainter &painter, int x, int centerY, qreal widt
     painter.setPen(QPen(Qt::blue, 3, Qt::SolidLine, Qt::FlatCap));
 
     painter.drawLine(x, centerY , x + width, centerY);
-    painter.drawText(x + width/2, centerY + 40, q + "q");
+    painter.drawText(x + width/2, centerY + 10, q + "q");
 
     if (q.toInt() > 0)
         for(int i = x + 15; i < x + width; i += 30)
@@ -267,27 +291,27 @@ inline void paintF(QPainter &painter, int x, int centerY, QString f)
 
     if (f.toInt() > 0)
     {
-        force.addRect(x, centerY - scaleElement/4, scaleElement/2, scaleElement/2);
-        force.moveTo(x + scaleElement/2, centerY);
-        force.lineTo(x + scaleElement/2, centerY - scaleElement/2);
-        force.lineTo(x + scaleElement, centerY);
-        force.lineTo(x + scaleElement/2, centerY + scaleElement/2);
+        force.addRect(x, centerY - scaleElement/8, scaleElement/4, scaleElement/4);
+        force.moveTo(x + scaleElement/4, centerY);
+        force.lineTo(x + scaleElement/4, centerY - scaleElement/4);
         force.lineTo(x + scaleElement/2, centerY);
+        force.lineTo(x + scaleElement/4, centerY + scaleElement/4);
+        force.lineTo(x + scaleElement/4, centerY);
 
         painter.drawPath(force);
     }
     else
     {
-        force.addRect(x - scaleElement/2, centerY - scaleElement/4, scaleElement/2, scaleElement/2);
-        force.moveTo (x - scaleElement/2, centerY);
-        force.lineTo (x - scaleElement/2, centerY - scaleElement/2);
-        force.lineTo (x - scaleElement, centerY);
-        force.lineTo (x - scaleElement/2, centerY + scaleElement/2);
+        force.addRect(x - scaleElement/4, centerY - scaleElement/8, scaleElement/8, scaleElement/8);
+        force.moveTo (x - scaleElement/4, centerY);
+        force.lineTo (x - scaleElement/4, centerY - scaleElement/4);
         force.lineTo (x - scaleElement/2, centerY);
+        force.lineTo (x - scaleElement/4, centerY + scaleElement/4);
+        force.lineTo (x - scaleElement/4, centerY);
 
         painter.drawPath(force);
     }
-    painter.drawText(x+15, centerY+25, f + "f");
+    painter.drawText(x + 5, centerY + 20, f + "F");
 
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
     painter.setBrush(QBrush(Qt::white, Qt::SolidPattern));
@@ -296,7 +320,7 @@ inline void paintF(QPainter &painter, int x, int centerY, QString f)
 inline void paintBase(QPainter &painter, int x, int centerY, bool base) //base, 0 - left, 1 - right
 {
     QPainterPath path;
-
+    painter.setPen(QPen(Qt::black, 4, Qt::SolidLine, Qt::RoundCap));
     if (!base)
     {
         path.moveTo(x, centerY);
@@ -313,6 +337,20 @@ inline void paintBase(QPainter &painter, int x, int centerY, bool base) //base, 
         painter.drawPath(path);
 
     }
+    painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
+}
+
+inline void MainWindow::showNx(QPainter &painter, qreal startX, qreal startY)
+{
+
+    for (auto it = NxMap.begin(); it != NxMap.end(); it++)
+    {
+    painter.drawLine(startX + offsetX + it.key() * scaleElement, startY + graphOffset, startX + offsetX + it.key() * scaleElement, startY + graphYLenght);
+        painter.drawLine(startX + offsetX, startY + (graphYLenght+graphOffset)/2, startX + offsetX + it.key() * scaleElement, startY + (graphYLenght+graphOffset)/2);
+    }
+
+
+
 }
 
 void MainWindow::paintEvent(QPaintEvent* )
@@ -331,32 +369,30 @@ void MainWindow::paintEvent(QPaintEvent* )
             qreal width  = ui->tableWidget->item(i, L)->text().toDouble() * scaleElement;
             qreal height = ui->tableWidget->item(i, A)->text().toDouble() * scaleElement;
 
-            paintElement(painter, startX + lastHeight, startY, width, height);
+            paintElement(painter, startX + offsetX + lastHeight, startY, width, height);
 
             if (ui->tableWidget->item(i, q)->text().toInt() != 0)
-                paintQ(painter, startX + lastHeight, startY, width, ui->tableWidget->item(i, q)->text());
+                paintQ(painter, startX + offsetX + lastHeight, startY, width, ui->tableWidget->item(i, q)->text());
 
             if (ui->tableWidget->item(i, F)->text().toInt() != 0)
-                paintF(painter, startX + lastHeight, startY, ui->tableWidget->item(i, F)->text());
+                paintF(painter, startX + offsetX + lastHeight, startY, ui->tableWidget->item(i, F)->text());
 
             lastHeight += ui->tableWidget->item(i, L)->text().toDouble() * scaleElement;
 
             if (getLeftBase())
-            {
-                qDebug("left");
-                paintBase(painter, startX, startY, 0);
-            }
-//            qDebug("i - %d", i);
+                paintBase(painter, startX + offsetX, startY, 0);
+
             if (getRightBase() && i == ui->tableWidget->rowCount() - 1)
-            {
-                paintBase(painter, startX + lastHeight, startY, 1);
-                qDebug("riGHT");
-            }
+                paintBase(painter, startX + offsetX + lastHeight, startY, 1);
+
+
             update();
         };
 
         lastHeight = 0;
     }
+
+    if(getNx()) showNx(painter, startX, startY);
 }
 
 void MainWindow::removeAll()
@@ -364,5 +400,187 @@ void MainWindow::removeAll()
     for(int i = ui->tableWidget->rowCount()-1; i >= 0; i--){
         ui->tableWidget->removeRow(i);
     }
+}
+
+
+// позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
+QVector<double> MainWindow::gauss(QVector<QVector<double>> matrixA, QVector<double> matrixB){
+
+    QList<double> result;
+       int k = 0;
+       int index;
+       double maxValue;
+       result.resize(matrixA.size());
+
+       for(int i = 0; i < result.size(); i++)
+           result[i] = 0;
+
+       // прямой ход
+       while(k < matrixA.size()){
+           maxValue = abs(matrixA[k][k]);
+           index = k;
+
+           for(int i = k + 1; i < matrixA.size();i++)
+               if(abs(matrixA[i][k]) > maxValue){
+                   maxValue = abs(matrixA[i][k]);
+                   index = i;
+               }
+           if(maxValue < 0.00001){
+               QMessageBox::warning(this,"Ошибка!","Невозможно получить решение из-за нулевого столбца " + QString::number(index) + " матрицы A");
+               result.clear();
+               return result;
+           }
+           // смена X[i]
+           for(int j = 0; j < matrixA.size(); j++){
+               double temp = matrixA[k][j];
+               matrixA[k][j] = matrixA[index][j];
+               matrixA[index][j] = temp;
+           }
+           // смена Y
+           double temp = matrixB[k];
+           matrixB[k] = matrixB[index];
+           matrixB[index] = temp;
+
+           for(int i = k; i < matrixA.size(); i++){
+               double temp = matrixA[i][k];
+               if(abs(temp) < 0.00001) continue;
+               for(int j = 0; j < matrixA.size(); j++)
+                   matrixA[i][j] /= temp;
+               matrixB[i] /= temp;
+               if(i == k) continue;
+               for(int j = 0; j < matrixA.size();j++)
+                   matrixA[i][j] -= matrixA[k][j];
+               matrixB[i] -= matrixB[k];
+           }
+           k++;
+       }
+
+       // обратный ход
+       for(k = matrixA.size()-1; k >= 0; k--){
+           result[k] = matrixB[k];
+           for(int i = 0; i < k; i++)
+               matrixB[i] -= matrixA[i][k]*result[k];
+       }
+
+       return result;
+}
+
+
+
+//// позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
+//QVector<double> MainWindow::gauss(QVector<QVector<double>> a, QVector<double> x){
+//    int i,j,k,n; // declare variables and matrixes as
+//       n = a.size();
+//       float b;
+//       //to find the elements of diagonal matrix
+//       for(j = 0; j < n; j++) {
+//          for(i = 0; i < n; i++) {
+//             if(i!=j) {
+//                b=a[i][j]/a[j][j];
+//                for(k=0; k < n; k++) {
+//                   a[i][k]=a[i][k]-b*a[j][k];
+//                }
+//             }
+//          }
+//       }
+
+//       for(i=0; i <= n; i++)
+//          x[i]=a[i][n+1]/a[i][i];
+
+//       return x;
+//    }
+
+
+
+void MainWindow::calc()
+{
+
+
+
+    short size = ui->tableWidget->rowCount() + 1;
+
+    QVector <QVector <double>> matrixA(size);
+    QVector <double>           matrixB(size);
+
+    QVector <float> EAM;
+
+    for (int i = 0; i < size - 1; i++)
+        EAM.push_back((ui->tableWidget->item(i,E)->text().toDouble() * ui->tableWidget->item(i,A)->text().toDouble())/ui->tableWidget->item(i,L)->text().toDouble());
+
+    short left  = -1       ; // Сдвиг по нулям слва
+
+    for (int i = 0; i < size; i++, left++) //Заполняем матрицу А
+    {
+          if (i == 0 )  matrixA[i].push_back(EAM[i]);
+          if (i == 0 )  matrixA[i].push_back(-EAM[i]);
+          if (i == 0 ) for (short j = size - 2; j < size; j++) matrixA[i].push_back(0);
+
+          if (i > 0 && i < size-1)
+          {
+              for (short j = 0; j < left; j++)
+                  matrixA[i].push_back(0);
+
+              matrixA[i].push_back(-EAM[i-1]         );
+              matrixA[i].push_back( EAM[i-1] + EAM[i]);
+              matrixA[i].push_back(-EAM[i  ]         );
+
+              for (short j = left + 3; j < size; j++)
+                  matrixA[i].push_back(0);
+         }
+
+          if (i == size-1 ) for (short j = 0; j < size - 2; j++) matrixA[i].push_back(0);
+
+          if (i == size-1 )  matrixA[i].push_back(-EAM[i - 1]);
+          if (i == size-1 )  matrixA[i].push_back( EAM[i - 1]);
+
+     }
+
+    for (short i = 0; i < size; i++) //Матрица B
+    {
+        if (i == 0)
+        {
+            if (getLeftBase())
+                matrixB[i] = 0;
+            else
+                matrixB[i] = getValue(i, L) * getValue(i, q) / 2;
+
+        }
+        if (i != 0 && i != size - 1) matrixB[i] = getValue(i,L) * getValue(i,q) / 2
+                + getValue(i, F) + getValue(i-1, q) * getValue(i-1, L) / 2;
+
+        if (i == size - 1 && getRightBase()) matrixB[i] = 0;
+
+        printf(":%f ", matrixB[i]);
+    }
+
+    for (short i = 0; i < size; i++)
+    {
+        if (i == 0 && getLeftBase()) matrixA[i][0] = 1;
+        if (i == 0 && getLeftBase()) matrixA[i][1] = 0;
+
+        if (i == 1 && getLeftBase()) matrixA[i][0] = 0;
+        if (i == size - 2 && getRightBase()) matrixA[i][3] = 0;
+        if (i == size - 1 && getRightBase()) matrixA[i][2] = 0;
+        if (i == size - 1 && getRightBase()) matrixA[i][3] = 1;
+    }
+    QVector <double> resultVector = gauss(matrixA, matrixB);
+    QMap<quint32, double> resultMap;
+
+    for (int i = 0; i < resultVector.size(); i++)
+        qDebug(":%f", resultVector[i]);
+
+    short LCounter = 0;
+    for (int i = 0; i < size - 1; i++)
+    {
+        double N  = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) + getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * 0/getValue(i,L));
+
+        resultMap[LCounter] = N;
+        LCounter += getValue(i,L);
+        qDebug("N1 : %f ", N);
+        N = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) +  getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * (getValue(i,L)/getValue(i,L)));
+        resultMap[LCounter] = N;
+        qDebug("N2 : %f ", N);
+    }
+    NxMap = resultMap;
 }
 
