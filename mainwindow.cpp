@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 #include <QInputDialog>
-#include <QtQuickWidgets/QQuickWidget>
 #include <QPainter>
 #include <QPainterPath>
 #include <QFileDialog>
@@ -14,6 +13,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMessageBox>
+#include <QDesktopServices>
+//#include <QDir>
 
 namespace  {
     const  int scaleElement = 30 ;
@@ -42,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->add,          &QAction::triggered, this, [this](){add()                        ;});
     QObject::connect(ui->remove,       &QAction::triggered, this, [this](){remove()                     ;});
     QObject::connect(ui->removeAll,    &QAction::triggered, this, [this](){ui->tableWidget->clear()     ;});
+    QObject::connect(ui->about,        &QAction::triggered, this, [this](){about()                      ;});
 
     QObject::connect(ui->showElement,  &QCheckBox::stateChanged, this, [this](){setDrawState(!getDrawState());});
     QObject::connect(ui->baseLeft,     &QCheckBox::stateChanged, this, [this](){setLeftBase (!getLeftBase ());});
@@ -55,6 +57,12 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->horizontalScrollBar,         &QAbstractSlider::valueChanged,    this, [this](){offsetX = -ui->horizontalScrollBar->sliderPosition() * 10;});
 
 
+}
+
+void MainWindow::about()
+{
+    QDesktopServices::openUrl(QUrl("about/about.html"));
+    qDebug("%s", qPrintable(QDir::currentPath()));
 }
 
 void MainWindow::fromJsonToTable(QJsonObject &obj)

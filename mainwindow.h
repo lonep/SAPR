@@ -49,6 +49,7 @@ public:
 private:
     void open();
     void write();
+    void about();
     void fromJsonToTable(QJsonObject &obj);
     void fromTxtToTable();
 
