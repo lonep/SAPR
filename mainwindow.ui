@@ -214,8 +214,8 @@
      <rect>
       <x>270</x>
       <y>0</y>
-      <width>121</width>
-      <height>71</height>
+      <width>160</width>
+      <height>70</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -247,10 +247,10 @@
    <widget class="QTableWidget" name="UXresultWidget">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>450</x>
       <y>0</y>
-      <width>121</width>
-      <height>71</height>
+      <width>160</width>
+      <height>70</height>
      </rect>
     </property>
     <attribute name="verticalHeaderVisible">
@@ -270,12 +270,15 @@
    <widget class="QTableWidget" name="GxresultWidget">
     <property name="geometry">
      <rect>
-      <x>530</x>
+      <x>620</x>
       <y>0</y>
-      <width>121</width>
-      <height>71</height>
+      <width>160</width>
+      <height>70</height>
      </rect>
     </property>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
     <column>
      <property name="text">
       <string>L</string>

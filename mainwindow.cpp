@@ -31,7 +31,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
 
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableWidget   ->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->resultWidget  ->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->UXresultWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->GxresultWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     QObject::connect(ui->open,        &QAction::triggered, this, [this](){open()                     ;});
     QObject::connect(ui->write,       &QAction::triggered, this, [this](){write()                    ;});
@@ -365,14 +368,14 @@ inline void paintBase(QPainter &painter, int x, int centerY, bool base) //base, 
 inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY, short tableName)
 {
 
-    painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::FlatCap));
+
     for (auto it = Map.begin(); it != Map.end(); it++)
     {
         painter.drawLine(startX + offsetX + it->first * scaleElement, startY + graphOffset, startX + offsetX + it->first * scaleElement, startY + graphYLenght);
         painter.drawLine(startX + offsetX, startY + (graphYLenght+graphOffset)/2, startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2);
     }
 
-
+    painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::FlatCap));
     for (auto it = Map.begin(); it != Map.end()-1; it++)
         painter.drawLine(startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2 -  it->second*10, startX + offsetX + std::next(it)->first * scaleElement, startY + (graphYLenght+graphOffset)/2 - std::next(it)->second * 10);
 
@@ -449,9 +452,9 @@ void MainWindow::paintEvent(QPaintEvent* )
         lastHeight = 0;
     }
 
-    if(getNx()) showGraph(painter, NxMap, startX, startY, 0);
-    if(getUx()) showGraph(painter, UxMap, startX, startY, 1);
-    if(getGx()) showGraph(painter, GxMap, startX, startY, 2);
+    if(getNx() && validation()) showGraph(painter, NxMap, startX, startY, 0);
+    if(getUx() && validation()) showGraph(painter, UxMap, startX, startY, 1);
+    if(getGx() && validation()) showGraph(painter, GxMap, startX, startY, 2);
 }
 
 void MainWindow::removeAll()
