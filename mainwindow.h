@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMap>
+#include <unordered_map>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,6 +22,8 @@ bool leftBase  = 0;
 bool rightBase = 0;
 
 bool Nx        = 0;
+bool Ux        = 0;
+bool Gx        = 0;
 };
 
 enum tableNames
@@ -59,9 +61,11 @@ private:
     void paintEvent(QPaintEvent* );
     inline void paintQ(QPainter &painter, int x, int centerY, qreal width, QString q);
 
-    QMap<quint32, double> NxMap;
-
-    void showNx(QPainter &painter, qreal startX, qreal startY);
+    QVector <QPair<int, double>>  NxMap;
+    QVector <QPair<int, double>>  UxMap;
+    QVector <QPair<int, double>>  GxMap;
+                                                                          // tableName -> N(x) - 0, U(x) - 1, G(x) - 2
+    void showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY, short tableName);
     Ui::MainWindow *ui;
 
     state wigetState;
@@ -77,6 +81,8 @@ private:
     bool getLeftBase ();
     bool getRightBase();
     bool getNx       ();
+    bool getUx       ();
+    bool getGx       ();
 
     double    getValue    (int element, int type);
 
@@ -85,5 +91,7 @@ private:
     void setLeftBase (bool state);
     void setRightBase(bool state);
     void setNx       (bool state);
+    void setUx       (bool state);
+    void setGx       (bool state);
 };
 #endif // MAINWINDOW_H

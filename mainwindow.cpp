@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include <unordered_map>
 
 #include <QInputDialog>
 #include <QtQuickWidgets/QQuickWidget>
@@ -43,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->baseLeft,     &QCheckBox::stateChanged, this, [this](){setLeftBase (!getLeftBase ());});
     QObject::connect(ui->baseRight,    &QCheckBox::stateChanged, this, [this](){setRightBase(!getRightBase());});
     QObject::connect(ui->Nx,           &QCheckBox::stateChanged, this, [this](){setNx       (!getNx       ());});
+    QObject::connect(ui->Ux,           &QCheckBox::stateChanged, this, [this](){setUx       (!getUx       ());});
+    QObject::connect(ui->Gx,           &QCheckBox::stateChanged, this, [this](){setGx       (!getGx       ());});
 
     QObject::connect(ui->Calc,         &QPushButton::clicked,    this, [this](){calc();});
 
@@ -177,6 +180,15 @@ void MainWindow::setNx(bool state)
     wigetState.Nx = state;
 }
 
+void MainWindow::setUx(bool state)
+{
+    wigetState.Ux = state;
+}
+
+void MainWindow::setGx(bool state)
+{
+    wigetState.Gx = state;
+}
 bool MainWindow::getDrawState()
 {
     return wigetState.drawState;
@@ -195,6 +207,16 @@ bool MainWindow::getLeftBase()
 bool MainWindow::getNx()
 {
     return wigetState.Nx;
+}
+
+bool MainWindow::getUx()
+{
+    return wigetState.Ux;
+}
+
+bool MainWindow::getGx()
+{
+    return wigetState.Gx;
 }
 
 double MainWindow::getValue (int element, int type)
@@ -340,17 +362,52 @@ inline void paintBase(QPainter &painter, int x, int centerY, bool base) //base, 
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
 }
 
-inline void MainWindow::showNx(QPainter &painter, qreal startX, qreal startY)
+inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY, short tableName)
 {
 
-    for (auto it = NxMap.begin(); it != NxMap.end(); it++)
+    painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::FlatCap));
+    for (auto it = Map.begin(); it != Map.end(); it++)
     {
-    painter.drawLine(startX + offsetX + it.key() * scaleElement, startY + graphOffset, startX + offsetX + it.key() * scaleElement, startY + graphYLenght);
-        painter.drawLine(startX + offsetX, startY + (graphYLenght+graphOffset)/2, startX + offsetX + it.key() * scaleElement, startY + (graphYLenght+graphOffset)/2);
+        painter.drawLine(startX + offsetX + it->first * scaleElement, startY + graphOffset, startX + offsetX + it->first * scaleElement, startY + graphYLenght);
+        painter.drawLine(startX + offsetX, startY + (graphYLenght+graphOffset)/2, startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2);
     }
 
 
+    for (auto it = Map.begin(); it != Map.end()-1; it++)
+        painter.drawLine(startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2 -  it->second*10, startX + offsetX + std::next(it)->first * scaleElement, startY + (graphYLenght+graphOffset)/2 - std::next(it)->second * 10);
 
+    for (auto it = Map.begin(); it != Map.end(); it++)
+    {
+    QTableWidgetItem *item = new QTableWidgetItem;
+    QTableWidgetItem *item1 = new QTableWidgetItem;
+
+    item->setText(QString::number(it->first));
+    item1->setText(QString::number(it->second));
+
+    switch (tableName) {
+    case 0: {
+            ui->resultWidget->insertRow(ui->resultWidget->rowCount());
+            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,1, item1);
+            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,0, item);
+            }
+
+    case 1: {
+            ui->UXresultWidget->insertRow(ui->UXresultWidget->rowCount());
+            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,1, item1);
+            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,0, item);
+            }
+
+    case 2: {
+            ui->GxresultWidget->insertRow(ui->GxresultWidget->rowCount());
+            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,1, item1);
+            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,0, item);
+            }
+
+
+    }
+    }
+
+    painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
 }
 
 void MainWindow::paintEvent(QPaintEvent* )
@@ -392,7 +449,9 @@ void MainWindow::paintEvent(QPaintEvent* )
         lastHeight = 0;
     }
 
-    if(getNx()) showNx(painter, startX, startY);
+    if(getNx()) showGraph(painter, NxMap, startX, startY, 0);
+    if(getUx()) showGraph(painter, UxMap, startX, startY, 1);
+    if(getGx()) showGraph(painter, GxMap, startX, startY, 2);
 }
 
 void MainWindow::removeAll()
@@ -494,8 +553,8 @@ QVector<double> MainWindow::gauss(QVector<QVector<double>> matrixA, QVector<doub
 
 void MainWindow::calc()
 {
-
-
+    if(validation() && ui->tableWidget->rowCount() != 1)
+    {
 
     short size = ui->tableWidget->rowCount() + 1;
 
@@ -564,7 +623,7 @@ void MainWindow::calc()
         if (i == size - 1 && getRightBase()) matrixA[i][3] = 1;
     }
     QVector <double> resultVector = gauss(matrixA, matrixB);
-    QMap<quint32, double> resultMap;
+    QVector <QPair<int, double>> resultMap;
 
     for (int i = 0; i < resultVector.size(); i++)
         qDebug(":%f", resultVector[i]);
@@ -574,13 +633,22 @@ void MainWindow::calc()
     {
         double N  = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) + getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * 0/getValue(i,L));
 
-        resultMap[LCounter] = N;
+        resultMap.push_back({LCounter, N});
         LCounter += getValue(i,L);
         qDebug("N1 : %f ", N);
-        N = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) +  getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * (getValue(i,L)/getValue(i,L)));
-        resultMap[LCounter] = N;
-        qDebug("N2 : %f ", N);
+        double N1 = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) +  getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * (getValue(i,L)/getValue(i,L)));
+        resultMap.push_back({LCounter, N1});
+        qDebug("N2 : %f ", N1);
     }
     NxMap = resultMap;
+
+
+    for (int i,j = 0; i < NxMap.size(); i++)
+    {
+
+        GxMap.push_back({NxMap[i].first, (NxMap[i].second / ui->tableWidget->item(j, A)->text().toDouble())});
+        if (j % 2 == 0) j++;
+    }
+   }
 }
 
