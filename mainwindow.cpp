@@ -628,10 +628,11 @@ void MainWindow::calc()
         if (i == 0 && getLeftBase()) matrixA[i][0] = 1;
         if (i == 0 && getLeftBase()) matrixA[i][1] = 0;
 
-        if (i == 1 && getLeftBase()) matrixA[i][0] = 0;
-        if (i == size - 2 && getRightBase()) matrixA[i][3] = 0;
-        if (i == size - 1 && getRightBase()) matrixA[i][2] = 0;
-        if (i == size - 1 && getRightBase()) matrixA[i][3] = 1;
+        if (getLeftBase()  && i!= size-1 && i!= 0) matrixA[i][0] = 0;
+        if (getRightBase() && i!= size-1 && i!= 0) matrixA[i][size-1] = 0;
+
+        if (i == size-1 && getRightBase()) matrixA[i][size-1] = 1;
+        if (i == size-1 && getRightBase()) matrixA[i][size-2] = 0;
     }
     QVector <double> resultVector = gauss(matrixA, matrixB);
     QVector <QPair<int, double>> resultMap;
