@@ -19,10 +19,10 @@
 namespace  {
     const  int scaleElement = 30 ;
     static int startX       = 300;
-    const  int startY       = 300;
+    const  int startY       = 250;
 
     const  int graphOffset  =  50 ;
-    const  int graphYLenght = 200 ;
+    const  int graphYLenght = 350 ;
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -37,8 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->UXresultWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->GxresultWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-    QObject::connect(ui->open,        &QAction::triggered, this, [this](){open()                     ;});
-    QObject::connect(ui->write,       &QAction::triggered, this, [this](){write()                    ;});
+    QObject::connect(ui->open,         &QAction::triggered, this, [this](){open()                     ;});
+    QObject::connect(ui->write,        &QAction::triggered, this, [this](){write()                    ;});
 
     QObject::connect(ui->add,          &QAction::triggered, this, [this](){add()                        ;});
     QObject::connect(ui->remove,       &QAction::triggered, this, [this](){remove()                     ;});
@@ -260,8 +260,6 @@ void MainWindow::initRow()
 {
     for (int i = 0; i < ui->tableWidget->columnCount(); i++)
         ui->tableWidget->item(ui->tableWidget->rowCount()-1, i)->setText("0");
-
-
 }
 
 void MainWindow::add()
@@ -373,9 +371,25 @@ inline void paintBase(QPainter &painter, int x, int centerY, bool base) //base, 
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
 }
 
-inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY, short tableName)
+inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY)
 {
+    short max = -4001;
+    short min = 4001;
 
+    float scaleK = 1;
+
+    for (auto it = Map.begin(); it != Map.end(); it++)
+    {
+        if (it->second > max) max = it->second;
+        if (it->second < min) min = it->second;
+    }
+
+    if (max < 2 || min > 2)
+        scaleK = 1.5;
+    if (max > 10 || min < -10)
+        scaleK = 0.5;
+    if (max > 30 || min < -30)
+        scaleK = 0.25;
 
     for (auto it = Map.begin(); it != Map.end(); it++)
     {
@@ -385,38 +399,7 @@ inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>
 
     painter.setPen(QPen(Qt::red, 2, Qt::SolidLine, Qt::FlatCap));
     for (auto it = Map.begin(); it != Map.end()-1; it++)
-        painter.drawLine(startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2 -  it->second*10, startX + offsetX + std::next(it)->first * scaleElement, startY + (graphYLenght+graphOffset)/2 - std::next(it)->second * 10);
-
-    for (auto it = Map.begin(); it != Map.end(); it++)
-    {
-    QTableWidgetItem *item = new QTableWidgetItem;
-    QTableWidgetItem *item1 = new QTableWidgetItem;
-
-    item->setText(QString::number(it->first));
-    item1->setText(QString::number(it->second));
-
-    switch (tableName) {
-    case 0: {
-            ui->resultWidget->insertRow(ui->resultWidget->rowCount());
-            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,1, item1);
-            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,0, item);
-            }
-
-    case 1: {
-            ui->UXresultWidget->insertRow(ui->UXresultWidget->rowCount());
-            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,1, item1);
-            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,0, item);
-            }
-
-    case 2: {
-            ui->GxresultWidget->insertRow(ui->GxresultWidget->rowCount());
-            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,1, item1);
-            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,0, item);
-            }
-
-
-    }
-    }
+        painter.drawLine(startX + offsetX + it->first * scaleElement, startY + (graphYLenght+graphOffset)/2 -  it->second*10*scaleK, startX + offsetX + std::next(it)->first * scaleElement, startY + (graphYLenght+graphOffset)/2 - std::next(it)->second * 10 * scaleK);
 
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
 }
@@ -460,9 +443,9 @@ void MainWindow::paintEvent(QPaintEvent* )
         lastHeight = 0;
     }
 
-    if(getNx() && validation()) showGraph(painter, NxMap, startX, startY, 0);
-    if(getUx() && validation()) showGraph(painter, UxMap, startX, startY, 1);
-    if(getGx() && validation()) showGraph(painter, GxMap, startX, startY, 2);
+    if(getNx() && validation()) showGraph(painter, NxMap, startX, startY);
+    if(getUx() && validation()) showGraph(painter, UxMap, startX, startY);
+    if(getGx() && validation()) showGraph(painter, GxMap, startX, startY);
 }
 
 void MainWindow::removeAll()
@@ -476,7 +459,7 @@ void MainWindow::removeAll()
 // позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
 QVector<double> MainWindow::gauss(QVector<QVector<double>> matrixA, QVector<double> matrixB){
 
-    QList<double> result;
+    QVector<double> result;
        int k = 0;
        int index;
        double maxValue;
@@ -535,32 +518,40 @@ QVector<double> MainWindow::gauss(QVector<QVector<double>> matrixA, QVector<doub
        return result;
 }
 
+void MainWindow::mapToTable(QVector <QPair<int, double>>  &Map, char tableName)
+{
+
+    for (auto it = Map.begin(); it != Map.end(); it++)
+    {
+    QTableWidgetItem *item = new QTableWidgetItem;
+    QTableWidgetItem *item1 = new QTableWidgetItem;
+
+    item->setText(QString::number(it->first));
+    item1->setText(QString::number(it->second));
+
+    switch (tableName) {
+    case 0: {
+            ui->resultWidget->insertRow(ui->resultWidget->rowCount());
+            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,1, item1);
+            ui->resultWidget->setItem(ui->resultWidget->rowCount()-1,0, item);
+            }
+
+    case 1: {
+            ui->UXresultWidget->insertRow(ui->UXresultWidget->rowCount());
+            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,1, item1);
+            ui->UXresultWidget->setItem(ui->UXresultWidget->rowCount()-1,0, item);
+            }
+
+    case 2: {
+            ui->GxresultWidget->insertRow(ui->GxresultWidget->rowCount());
+            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,1, item1);
+            ui->GxresultWidget->setItem(ui->GxresultWidget->rowCount()-1,0, item);
+            }
 
 
-//// позаимствовано и адаптировано с https://prog-cpp.ru/gauss/
-//QVector<double> MainWindow::gauss(QVector<QVector<double>> a, QVector<double> x){
-//    int i,j,k,n; // declare variables and matrixes as
-//       n = a.size();
-//       float b;
-//       //to find the elements of diagonal matrix
-//       for(j = 0; j < n; j++) {
-//          for(i = 0; i < n; i++) {
-//             if(i!=j) {
-//                b=a[i][j]/a[j][j];
-//                for(k=0; k < n; k++) {
-//                   a[i][k]=a[i][k]-b*a[j][k];
-//                }
-//             }
-//          }
-//       }
-
-//       for(i=0; i <= n; i++)
-//          x[i]=a[i][n+1]/a[i][i];
-
-//       return x;
-//    }
-
-
+    }
+    }
+}
 
 void MainWindow::calc()
 {
@@ -583,7 +574,7 @@ void MainWindow::calc()
     {
           if (i == 0 )  matrixA[i].push_back(EAM[i]);
           if (i == 0 )  matrixA[i].push_back(-EAM[i]);
-          if (i == 0 ) for (short j = size - 2; j < size; j++) matrixA[i].push_back(0);
+          if (i == 0 ) for (short j = 2; j < size; j++) matrixA[i].push_back(0);
 
           if (i > 0 && i < size-1)
           {
@@ -647,20 +638,22 @@ void MainWindow::calc()
 
         resultMap.push_back({LCounter, N});
         LCounter += getValue(i,L);
-        qDebug("N1 : %f ", N);
         double N1 = (getValue(i,A)/getValue(i,L))*(resultVector[i+1] - resultVector[i]) +  getValue(i,q) * getValue(i,L) / 2 * (1 - 2 * (getValue(i,L)/getValue(i,L)));
         resultMap.push_back({LCounter, N1});
-        qDebug("N2 : %f ", N1);
     }
     NxMap = resultMap;
 
 
     for (int i,j = 0; i < NxMap.size(); i++)
     {
-
         GxMap.push_back({NxMap[i].first, (NxMap[i].second / ui->tableWidget->item(j, A)->text().toDouble())});
         if (j % 2 == 0) j++;
     }
+
+    mapToTable(NxMap, 0);
+    //mapToTable(UxMap, 1);
+    mapToTable(GxMap, 2);
+
    }
 }
 

@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <unordered_map>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -52,6 +51,8 @@ private:
     void about();
     void fromJsonToTable(QJsonObject &obj);
     void fromTxtToTable();
+                                             // tableName -> N(x) - 0, U(x) - 1, G(x) - 2
+    void mapToTable(QVector <QPair<int, double>>  &Map, char tableName);
 
     bool validation();
 
@@ -65,8 +66,8 @@ private:
     QVector <QPair<int, double>>  NxMap;
     QVector <QPair<int, double>>  UxMap;
     QVector <QPair<int, double>>  GxMap;
-                                                                          // tableName -> N(x) - 0, U(x) - 1, G(x) - 2
-    void showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY, short tableName);
+
+    void showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY);
     Ui::MainWindow *ui;
 
     state wigetState;
