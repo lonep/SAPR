@@ -384,7 +384,7 @@ inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>
         if (it->second < min) min = it->second;
     }
 
-    if (max < 2 || min > 2)
+    if (max < 2 || min > -2)
         scaleK = 1.5;
     if (max > 10 || min < -10)
         scaleK = 0.5;
