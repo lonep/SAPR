@@ -385,7 +385,7 @@ inline void MainWindow::showGraph(QPainter &painter, QVector <QPair<int, double>
     }
 
     if (max < 2 || min > -2)
-        scaleK = 1.5;
+        scaleK = 2;
     if (max > 10 || min < -10)
         scaleK = 0.5;
     if (max > 30 || min < -30)
