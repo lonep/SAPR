@@ -53,21 +53,23 @@ private:
     void fromTxtToTable();
                                              // tableName -> N(x) - 0, U(x) - 1, G(x) - 2
     void mapToTable(QVector <QPair<int, double>>  &Map, char tableName);
+    void mapToTable(QVector <QPair<double, double>>  &Map, char tableName);
 
     bool validation();
 
     void add();
     void remove();
     void removeAll();
-
+    void newProject();
     void paintEvent(QPaintEvent* );
     inline void paintQ(QPainter &painter, int x, int centerY, qreal width, QString q);
 
     QVector <QPair<int, double>>  NxMap;
-    QVector <QPair<int, double>>  UxMap;
+    QVector <QPair<double, double>>  UxMap;
     QVector <QPair<int, double>>  GxMap;
 
     void showGraph(QPainter &painter, QVector <QPair<int, double>>  &Map, qreal startX, qreal startY);
+    void showGraphUx(QPainter &painter, QVector <QPair<double, double>>  &Map, qreal startX, qreal startY);
     Ui::MainWindow *ui;
 
     state wigetState;
