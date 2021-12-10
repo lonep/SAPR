@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Заделка слева</string>
+     <string>Заделка &lt;-</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="baseRight">
@@ -37,7 +37,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Заделка справа</string>
+     <string>Заделка &gt;</string>
     </property>
    </widget>
    <widget class="QTableWidget" name="tableWidget">
@@ -45,7 +45,7 @@
      <rect>
       <x>9</x>
       <y>74</y>
-      <width>256</width>
+      <width>231</width>
       <height>192</height>
      </rect>
     </property>
@@ -108,11 +108,6 @@
     <column>
      <property name="text">
       <string>q</string>
-     </property>
-    </column>
-    <column>
-     <property name="text">
-      <string>F</string>
      </property>
     </column>
    </widget>
@@ -290,6 +285,21 @@
      </property>
     </column>
    </widget>
+   <widget class="QTableWidget" name="fTable">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>111</width>
+      <height>192</height>
+     </rect>
+    </property>
+    <column>
+     <property name="text">
+      <string>F</string>
+     </property>
+    </column>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -304,11 +314,11 @@
     <property name="title">
      <string>Главное</string>
     </property>
+    <addaction name="newProject"/>
     <addaction name="open"/>
     <addaction name="write"/>
     <addaction name="about"/>
-    <addaction name="action_2"/>
-    <addaction name="action_4"/>
+    <addaction name="exit"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -327,7 +337,7 @@
     <string>Открыть проeкт</string>
    </property>
   </action>
-  <action name="action_2">
+  <action name="exit">
    <property name="text">
     <string>Закрыть проект</string>
    </property>
@@ -365,6 +375,11 @@
   <action name="write">
    <property name="text">
     <string>Сохранить проект</string>
+   </property>
+  </action>
+  <action name="newProject">
+   <property name="text">
+    <string>Новый проект</string>
    </property>
   </action>
  </widget>
