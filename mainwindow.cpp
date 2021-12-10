@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::about()
 {
 
-    QDesktopServices::openUrl(QUrl("about/about.html"));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QCoreApplication::applicationDirPath() + "/about/about.html"));
     qDebug("%s", qPrintable(QDir::currentPath()));
 }
 
