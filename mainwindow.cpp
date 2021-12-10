@@ -759,7 +759,7 @@ void MainWindow::calc()
         if (i == size - 1 && getRightBase())
             matrixB[i] = 0;
          else
-               if (!getRightBase() && size == 2)
+               if (!getRightBase() && size == 2 && i != 0)
                    matrixB[i] = getValue(i - 1, L) * getValue(i - 1, q) / 2 + getValue(i, F);
 
 
